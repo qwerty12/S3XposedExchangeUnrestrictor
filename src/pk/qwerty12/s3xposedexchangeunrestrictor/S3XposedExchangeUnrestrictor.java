@@ -11,6 +11,13 @@ public class S3XposedExchangeUnrestrictor implements IXposedHookLoadPackage {
 	private static final String PACKAGE_EMAIL = "com.android.email";
 	private static final String PACKAGE_EXCHANGE = "com.android.exchange";
 
+	private static XC_MethodHook setTrueBeforeAndReturn = new XC_MethodHook() {
+		protected void beforeHookedMethod(MethodHookParam param) throws Throwable
+		{
+			param.setResult(Boolean.TRUE);
+		}		
+	};
+
 	private void handleEmail(LoadPackageParam lpparam) {
 		try {
 			final Class<?> classSecurityPolicy = XposedHelpers.findClass(PACKAGE_EMAIL + ".SecurityPolicy", lpparam.classLoader);
@@ -25,32 +32,11 @@ public class S3XposedExchangeUnrestrictor implements IXposedHookLoadPackage {
 					}
 				});
 
-			XposedHelpers.findAndHookMethod(classSecurityPolicy, "isActive", classPolicySet, 
-				new XC_MethodHook()
-				{
-					protected void beforeHookedMethod(MethodHookParam param) throws Throwable
-					{
-						param.setResult(Boolean.TRUE);
-					}
-				});
+			XposedHelpers.findAndHookMethod(classSecurityPolicy, "isActive", classPolicySet, setTrueBeforeAndReturn);
 
-			XposedHelpers.findAndHookMethod(classSecurityPolicy, "isActiveAdmin", 
-				new XC_MethodHook()
-				{
-					protected void beforeHookedMethod(MethodHookParam param) throws Throwable
-					{
-						param.setResult(Boolean.TRUE);
-					}
-				});
+			XposedHelpers.findAndHookMethod(classSecurityPolicy, "isActiveAdmin", setTrueBeforeAndReturn);
 
-			XposedHelpers.findAndHookMethod(classSecurityPolicy, "isSupported", classPolicySet, 
-				new XC_MethodHook()
-				{
-					protected void beforeHookedMethod(MethodHookParam param) throws Throwable
-					{
-						param.setResult(Boolean.TRUE);
-					}
-				});
+			XposedHelpers.findAndHookMethod(classSecurityPolicy, "isSupported", classPolicySet, setTrueBeforeAndReturn);
 		} catch (Throwable t) { XposedBridge.log(t); }		
 	}
 
